@@ -4,5 +4,7 @@ ThisBuild / scalaVersion := "2.13.8"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "scala-quiz-manager"
+    name := "scala-quiz-manager",
+    assembly / mainClass := Some("com.example.Main"),
+    assembly / assemblyJarName := "ZNOQuizManager.jar"
   )
