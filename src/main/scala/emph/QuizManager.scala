@@ -1,26 +1,20 @@
 package emph
 
+import scala.io.AnsiColor.{BOLD, GREEN, RESET, REVERSED, RED}
 import scala.io.StdIn
 import scala.util.Random
 
-case class Question(
-    question: String,
-    options: Vector[String],
-    answers: Vector[String]
-)
+case class Question(question: String, options: Vector[String], answers: Vector[String])
 
-sealed trait QuizMode {
+trait QuizMode {
   def offset: Int
   def limit: Int
   def randomize: Boolean
 }
-case class Limited(offset: Int = 0, limit: Int = Int.MaxValue, randomize: Boolean = false) extends QuizMode
+case class Limited(offset: Int = 0, limit: Int = Int.MaxValue, randomize: Boolean = false)      extends QuizMode
 case class LimitedRandom(offset: Int = 0, limit: Int = Int.MaxValue, randomize: Boolean = true) extends QuizMode
 
-class QuizManager(
-    questionList: Vector[Question],
-    mode: QuizMode
-) {
+class QuizManager(questionList: Vector[Question], mode: QuizMode) {
 
   private val questions: Vector[Question] =
     if (mode.randomize) Random.shuffle(questionList.slice(mode.offset, mode.limit))
@@ -48,7 +42,7 @@ class QuizManager(
                |${"=" * 30}
                |Score    : $score%3d/$total%-3d ${score.toDouble / total * 100}%5.2f%%
                |Question : $questionIndex%3d
-               |${currentQuestion.question} ?
+               |${REVERSED}${BOLD}${currentQuestion.question}${RESET} ?
                |
                |Options:
                |${currentQuestion.options.zipWithIndex
@@ -63,33 +57,29 @@ class QuizManager(
           |""".stripMargin)
   }
 
-  private def checkAnswer(
-      userAnswer: Option[Int],
-      currentQuestion: Question
-  ): Unit = {
+  private def checkAnswer(userAnswer: Option[Int], currentQuestion: Question): Unit = {
 
     val answerOpt = for {
       optionIndex <- userAnswer
-      answer <- currentQuestion.options.lift(optionIndex)
+      answer      <- currentQuestion.options.lift(optionIndex)
     } yield answer
 
     answerOpt match {
       case Some(answer) if currentQuestion.answers.contains(answer) =>
         score = score + 1
-        println(s"""Correct!
-             |Your answer was [$answer]""".stripMargin)
+        println(s"""${GREEN}Correct!${RESET}
+             |Your answer was [${GREEN}$answer${RESET}]""".stripMargin)
 
       case Some(answer) =>
         println(
-          s"""Incorrect!
-             |Your answer was [$answer].
-             |The correct answer is [${currentQuestion.answers.mkString(
+          s"""${RED}Incorrect!${RESET}
+             |Your answer was [${RED}$answer${RESET}].
+             |The correct answer is [${GREEN}${currentQuestion.answers.mkString(
             " or "
-          )}]""".stripMargin
+          )}${RESET}]""".stripMargin
         )
 
-      case None =>
-        println(s"Could not find option")
+      case None => println(s"Could not find option")
     }
   }
 

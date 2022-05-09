@@ -1,0 +1,15 @@
+jpackage --input ./installer/in `
+  --main-jar zno.jar `
+  --name zno `
+  --main-class emph.Emph `
+  --app-version 0.1 `
+  --description "A small quiz manager for my brother" `
+  --vendor "vlodik" `
+  --copyright "Copyright 2022, All rights reserved" `
+  --dest ./installer/out `
+  --icon ./img/bro.ico  `
+  --win-console `
+  --arguments "./app/data.txt" `
+  --arguments "0" `
+  --arguments "10000" `
+  --arguments "true"

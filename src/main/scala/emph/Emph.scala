@@ -1,5 +1,6 @@
 package emph
 
+import scala.io.{Codec, Source, StdIn}
 
 object Emph {
   case class Word(original: String) {
@@ -18,24 +19,55 @@ object Emph {
       new String(newWord)
     }
 
-    val options: Vector[String] = baseWord.toCharArray.zipWithIndex.flatMap {
-      case (ch, i) =>
-        if (isVowel(ch)) Some(createWordWithUpperChar(baseWord, i))
-        else None
+    val options: Vector[String] = baseWord.toCharArray.zipWithIndex.flatMap { case (ch, i) =>
+      if (isVowel(ch)) Some(createWordWithUpperChar(baseWord, i))
+      else None
     }.toVector
 
-    val answers: Vector[String] = baseWord.toCharArray.zipWithIndex.flatMap {
-      case (ch, i) =>
-        if (isVowel(ch) && ch.isUpper)
-          Some(createWordWithUpperChar(baseWord, i))
-        else None
+    val answers: Vector[String] = baseWord.toCharArray.zipWithIndex.flatMap { case (ch, i) =>
+      if (isVowel(ch) && ch.isUpper)
+        Some(createWordWithUpperChar(baseWord, i))
+      else None
     }.toVector
   }
 
+  def resolveQuizMode(args: Array[String]): QuizMode = {
+    if (args.length != 4) {
+      throw new IllegalArgumentException(s"Expected exactly 4 arguments, but got ${args.length}")
+    }
+    val (_, offsetArg, limitArg, randomizeArg) = (args(0), args(1), args(2), args(3))
+    new QuizMode {
+      override def offset: Int        = offsetArg.toInt
+      override def limit: Int         = limitArg.toInt
+      override def randomize: Boolean = randomizeArg.toBoolean
+    }
+  }
+
+  def resolveDataSource(args: Array[String]): Seq[String] = {
+    val dataSourceFile = args(0)
+    val source         = Source.fromFile(dataSourceFile)(Codec.UTF8)
+    val lines          = source.getLines.toSeq
+    source.close()
+    lines
+  }
+
+  def showHelp(args: Array[String]): Unit = {
+    if (args.length == 0 || args(0).contains("help")) {
+      println("Usage  : .\\zno.exe <path\\to\\data.txt> <limit> <offset> <randomize>")
+      println("Example: .\\zno.exe .\\app\\data.txt 5 10 true")
+      println("Meaning: questions [10-15] in random order")
+      val _ = StdIn.readLine()
+      System.exit(0)
+    }
+  }
+
   def main(args: Array[String]): Unit = {
+    showHelp(args)
+    val quizMode = resolveQuizMode(args)
+    val data     = resolveDataSource(args)
+
     val questions =
-      "агронОмія\nалфАвІт\nАркушик\nасиметрІя\nбагаторазОвий\nбезпринцИпний\nбЕшкет\nблАговіст\nблизькИй\nболотИстий\nборОдавка\nбосОніж\nбоЯзнь\nбурштинОвий\nбюлетЕнь\nвАги (у множині)\nвантажІвка\nвеснЯнИй\nвИгода (користь)\nвигОда (зручність)\nвидАння\nвизвОльний\nвимОга\nвИпадок\nвирАзний\nвИсіти\nвИтрата\nвишИваний\nвідвезтИ\nвідвестИ\nвІдгомін\nвіднестИ\nвІдомість (список)\nвідОмість (повідомлення, дані, популярність)\nвІрші\nвіршовИй\nвітчИм\nгальмО\nгАльма\nглядАч\nгорошИна\nграблІ\nгуртОжиток\nданИна\nдАно\nдецимЕтр\nдЕщиця\nде-Юре\nджерелО\nдИвлячись\nдичАвіти\nдіалОг\nдобовИй\nдобУток\nдовезтИ\nдовестИ\nдовІдник\nдОгмат\nдонестИ\nдОнька\nдочкА\nдрОва\nекспЕрт\nєретИк\nжалюзІ\nзавдАння\nзавезтИ\nзавестИ\nзАвжди\nзавчасУ\nзАгадка\nзаіржАвілий\nзаіржАвіти\nзакінчИти\nзАкладка (у книзі)\nзАкрутка\nзалишИти\nзамІжня\nзанестИ\nзАпонка\nзаробІток\nзАставка\nзАстібка\nзастОпорити\nзвИсока\nздАлека\nзібрАння\nзобразИти\nзОзла\nзрАння\nзрУчний\nзубОжіння\nіндУстрія\nкАмбала\nкаталОг\nквартАл\nкИшка\nкіломЕтр\nкінчИти\nкОлесо\nкОлія\nкОпчений (дієприкметник)\nкопчЕний (прикметник)\nкорИсний\nкОсий\nкотрИй\nкрицЕвий\nкрОїти\nкропивА\nкулінАрія\nкУрятина\nлАте\nлистопАд\nлітОпис\nлЮстро\nмАбУть\nмагістЕрський\nмАркетинг\nмерЕжа\nметалУргія\nмілімЕтр\nнавчАння\nнанестИ\nнапІй\nнАскрізний\nнАчинка\nненАвидіти\nненАвисний\nненАвисть\nнестИ\nнІздря\nновИй\nобіцЯнка\nобрАння\nобрУч (іменник)\nодинАдцять\nодноразОвий\nознАка\nОлень\nоптОвий\nосетЕр\nотАман\nОцет\nпавИч\nпартЕр\nпЕкарський\nперевезтИ\nперевестИ\nперЕкис\nперелЯк\nперенестИ\nперЕпад\nперЕпис\nпіалА\nпІдданий (дієприкметник)\nпіддАний (іменник, істота)\nпІдлітковий\nпізнАння\nпітнИй\nпіцЕрія\nпОдруга\nпОзначка\nпОмилка\nпомІщик\nпомОвчати\nпонЯття\nпорядкОвий\nпосерЕдині\nпривезтИ\nпривестИ\nпрИморозок\nпринестИ\nпрИчіп\nпрОділ\nпромІжок\nпсевдонІм\nрАзом\nрЕмінь (пояс)\nрЕшето\nрИнковий\nрівнИна\nроздрібнИй\nрОзпірка\nрукОпис\nруслО\nсантимЕтр\nсвЕрдло\nсерЕдина\nсЕча\nсиметрІя\nсільськогосподАрський\nсімдесЯт\nслИна\nсоломИнка\nстАтуя\nстовідсОтковий\nстрибАти\nтекстовИй\nтечіЯ\nтИгровий\nтисОвий\nтім’янИй\nтравестІя\nтризУб\nтУлуб\nукраЇнський\nуподОбання\nурочИстий\nусерЕдині\nфартУх\nфаховИй\nфенОмен\nфОльга\nфОрзац\nхАос (у міфології: стихія)\nхаОс (безлад)\nцАрина\nцемЕнт\nцЕнтнер\nціннИк\nчарівнИй\nчерговИй\nчитАння\nчорнОзем\nчорнОслив\nчотирнАдцять\nшляхопровІд\nшовкОвий\nшофЕр\nщЕлепа\nщИпці\nщодобовИй\nярмаркОвий"
-        .split("\n")
+      data
         .map(Word)
         .map(word =>
           Question(
@@ -46,9 +78,7 @@ object Emph {
         )
         .toVector
 
-    new QuizManager(questions,
-      Limited(limit = 10)
-    ).start()
+    new QuizManager(questions, quizMode).start()
   }
 
 }
