@@ -4,6 +4,10 @@ A small ZNO quiz manager for my brother.
 
 Installation path is `C:\Program Files\zno`
 
+```powershell
+cd 'C:\Program Files\zno'
+```
+
 ## Emphasis' Quiz
 
 To display help run:
